@@ -1,0 +1,42 @@
+input[type=text] {
+    background: transparent;
+    outline-width: 0;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    font-size: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  input[type=password] {
+    background: transparent;
+    outline-width: 0;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    font-size: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+.input-password {
+    margin-top: 15px;
+    width: 70%;
+    background-color: rgb(255, 255, 255); /*teste*/
+    box-shadow: 0 -1px 0 #e5e5e5, 0 0 2px rgba(0, 0, 0, .12), 0 2px 4px rgba(0, 0, 0, .24);
+    display: flex;
+    text-align: center;
+    justify-content:flex-start;
+    align-items: center;
+    border-radius: 10px;
+}
+.input-password svg {
+    margin-left: 5px;
+    margin-right: 5px;
+    min-height: 16px;
+    min-width: 16px;
+}
+#pass{
+  width: 89%;
+}
