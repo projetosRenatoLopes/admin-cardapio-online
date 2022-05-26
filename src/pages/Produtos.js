@@ -236,6 +236,7 @@ const Produtos = () => {
                                     }
                                 });
                                 setProduct(newList)
+                                
                             }
                         }).catch(error => {
                             colorMsgEdit('yellow', `resp-${productEdit[0].id}`, 'Produto atualizado! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')

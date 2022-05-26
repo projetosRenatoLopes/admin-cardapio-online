@@ -37,7 +37,9 @@ const Login = () => {
                 if (res.data.token !== undefined && res.data.id !== undefined) {
                     localStorage.setItem(`${companyTag}-token`, res.data.token)
                     sessionStorage.setItem('userId', res.data.id)
-                    sessionStorage.setItem('userAdmin', res.data.name)
+                    localStorage.setItem(`${companyTag}-user`, res.data.name)
+                    
+               
                 }
                 document.getElementById('msg')['textContent'] = res.data.name
                 document.getElementById('msg').style.color = 'green'

@@ -27,7 +27,7 @@ export default () => {
             <Route exact path={`/admingpco`} element={<Administrador />} />
             <Route exact path={'/erro'} element={<Erro />} />
             <Route exact path={`:uuid/*`} element={<NotFound />} />
-            <Route exact index element={<div><Erro /></div>} />
+            <Route exact index element={<div><NotFound /></div>} />
         </Routes>
     );
 }

@@ -5,7 +5,7 @@ import { RiMenuLine, RiMenuUnfoldFill } from 'react-icons/ri'
 const Menu = () => {
     const companyTag = sessionStorage.getItem('tag')
 
-    const userAdmin = sessionStorage.getItem('userAdmin')
+    const userAdmin = localStorage.getItem(`${companyTag}-user`)
     var user;
     if (userAdmin === undefined) {
         user = ''
