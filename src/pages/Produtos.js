@@ -56,10 +56,67 @@ const Produtos = () => {
 
         const RenderOptions = (product, key) => {
 
-            function delProd() {
+            async function delProd() {
                 var resp = window.confirm(`Deseja exlcuir ${product.nomeprod}\nAtenção: Isso não poderá ser desfeito.`)
                 if (resp === true) {
-                    alert(`${product.nomeprod} excluido.`)
+                    const data = JSON.parse(sessionStorage.getItem('info'))
+                    const id = product.uuid
+                    const token = localStorage.getItem(`${companyTag}-token`)
+                    const tagpage = sessionStorage.getItem('tag')
+                    if (token !== undefined) {
+                        var resposta;
+                        await api({
+                            method: 'DELETE',
+                            url: `/produtos/excluir`,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: token
+                            },
+                            data: { "id": id, "tag": tagpage.replace(/[/]/, '') }
+                        })
+                            .then(resp => {
+                                resposta = resp.data;
+
+                                api.get(`/produtos/${data[0].tag}`).then(res => {
+                                    if (res.data[0].products === undefined) {
+                                        sessionStorage.setItem('listProduct', JSON.stringify([]))
+                                        alert('Produto excluído! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
+                                    } else {
+                                        sessionStorage.setItem('listProduct', JSON.stringify(res.data[0].products))
+                                        sessionStorage.setItem('viewProducts', JSON.stringify(res.data[0].products))
+                                        const act = document.getElementById('active')['checked']
+                                        const des = document.getElementById('desactive')['checked']
+                                        var verifyStatus;
+                                        if (act === true) {
+                                            verifyStatus = 'Desativado'
+                                        } else if (des === true) {
+                                            verifyStatus = 'Ativo'
+                                        } else { verifyStatus = 'Todos' }
+                                        var listProdView = res.data[0].products.sort(compareName).sort(compare)
+
+                                        var newList = [];
+                                        listProdView.forEach(element => {
+                                            if (element.status !== verifyStatus) {
+                                                newList.push(element)
+                                            }
+                                        });
+                                        setProduct(newList)
+                                        alert(`${product.nomeprod} excluido.`)
+
+                                    }
+                                }).catch(error => {
+                                    alert('Produto excluído! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
+                                })
+
+                            }).catch(error => {
+                                resposta = error.toJSON();
+                                if (resposta.status === 500) {
+                                    alert('Erro 500 - Requisição invalida')
+                                } else { alert(`Erro ${resposta.status} - ${resposta.message}`) }
+                            })
+                    } else { alert('Usuário não autenticado.'); window.location.href = `${companyTag}/login` }
+
+
                 }
             }
 
@@ -69,10 +126,11 @@ const Produtos = () => {
                     nameProd = document.getElementById(`nome-${product.uuid}`)['value'],
                     descPro = document.getElementById(`desc-${product.uuid}`)['value'],
                     imgPro = document.getElementById(`img-${product.uuid}`)['value'],
-                    pricePro = document.getElementById(`preco-${product.uuid}`)['value'],
+                    price = document.getElementById(`preco-${product.uuid}`)['value'],
                     categPro = document.getElementById(`selCateg-${product.uuid}`)['value'],
                     situacao = document.getElementById(`selAtivo-${product.uuid}`)['value'],
                     tag = data[0].tag;
+                    const pricePro = price.replace(/[A-Za-z]/, '').replace(/[$]/, '').replace(/[,]/, '.').replace(/( )+/g, '').replace(/[R$ ]/, '');
                 const productData = [{ "id": id, "nameprod": nameProd, "priceprod": pricePro, "imgprod": imgPro, "descprod": descPro, "categprod": categPro, "sit": situacao, "tagprod": tag }]
                 if (nameProd !== '') {
                     if (descPro !== '') {
@@ -89,6 +147,36 @@ const Produtos = () => {
                     } else { alert('Preencha o campo Descrição.') }
                 } else { alert('Preencha o campo nome.') }
 
+            }
+
+            const verifyPriceEdit = () => {
+                var tx = document.getElementById(`preco-${product.uuid}`)['value']
+                tx = tx.replace(/0,0/g, '');
+                tx = tx.replace(/0,00/g, '');
+                tx = tx.replace(/0,/g, '');
+                console.log(tx)
+                tx = tx.replace(/[A-Za-z]/, '');
+                tx = tx.replace(/\D/g, '');
+                var newTx;
+                if (tx.length === 0) {
+                    newTx = ""
+                } else if (tx.length === 1) {
+                    console.log(1)
+                    newTx = `0,0${tx}`
+                } else if (tx.length === 2) {
+                    console.log(2)
+                    newTx = `0,${tx.slice(0, 2)}`
+                } else if (tx.length === 3) {
+                    console.log(3)
+                    newTx = `${tx.slice(0, 1)},${tx.slice(1, 3)}`
+                } else if (tx.length === 4) {
+                    console.log(4)
+                    newTx = `${tx.slice(0, 2)},${tx.slice(2, 4)}`
+                } else if (tx.length >= 5) {
+                    console.log(4)
+                    newTx = `${tx.slice(0, 3)},${tx.slice(3, 5)}`
+                }
+                document.getElementById(`preco-${product.uuid}`)['value'] = ("R$ " + newTx)
             }
 
             return (<div key={product.nomeprod}>
@@ -135,7 +223,7 @@ const Produtos = () => {
                                 </div>
                                 <p style={{ 'margin': '0 0 1px 0' }} >Preço:</p>
                                 <div style={{ 'width': '100%', 'display': 'flex' }}>
-                                    <textarea className="ad-inp" defaultValue={product.preco} id={`preco-${product.uuid}`} style={{ 'width': '100%', 'resize': 'none', 'padding': '8px 0 0 5px' }}></textarea>
+                                    <textarea className="ad-inp" defaultValue={`R$ ${product.preco.replace(/[.]/, ',')}`} id={`preco-${product.uuid}`} onChange={verifyPriceEdit} style={{ 'width': '100%', 'resize': 'none', 'padding': '8px 0 0 5px' }}></textarea>
                                 </div>
                                 <p style={{ 'margin': '0 0 1px 0' }}>Categoria:</p>
                                 <div style={{ 'width': '100%', 'display': 'flex' }}>
@@ -152,7 +240,7 @@ const Produtos = () => {
                             </div>
                             <div style={{ 'width': '100%', 'justifyContent': 'flex-end', 'display': 'flex' }}>
                                 <button id='btn-cad' className="btn-co btn-l" onClick={verifyEditProd} style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Salvar</button>
-                                <label className="btn-co btn-r" htmlFor='acc-close' style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Cancelar</label>
+                                <label className="btn-co btn-r" htmlFor='acc-close' style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Fechar</label>
                             </div>
                             <textarea className="ad-inp" id={`resp-${product.uuid}`} defaultValue="Resposta do servidor >" disabled style={{ 'width': '97%', 'height': '100px', 'backgroundColor': 'white', 'color': 'black', 'resize': 'none' }}></textarea>
                         </div>
@@ -236,7 +324,7 @@ const Produtos = () => {
                                     }
                                 });
                                 setProduct(newList)
-                                
+
                             }
                         }).catch(error => {
                             colorMsgEdit('yellow', `resp-${productEdit[0].id}`, 'Produto atualizado! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
@@ -290,6 +378,7 @@ const Produtos = () => {
         boxShadow: 24,
         p: 4,
     };
+
     function openModal(imgView) {
         setImg(imgView);
         setOpen(true)
@@ -345,9 +434,9 @@ const Produtos = () => {
         const nameProd = document.getElementById('ad-name')['value'],
             descPro = document.getElementById('ad-desc')['value'],
             imgPro = document.getElementById('ad-img')['value'],
-            pricePro = document.getElementById('ad-price')['value'],
+            price = document.getElementById('ad-price')['value'],
             categPro = document.getElementById('sel-categ')['value'];
-
+        const pricePro = price.replace(/[A-Za-z]/, '').replace(/[$]/, '').replace(/[,]/, '.').replace(/( )+/g, '').replace(/[R$ ]/, '');
         const data = JSON.parse(sessionStorage.getItem('info'))
         const tag = data[0].tag
 
@@ -401,6 +490,37 @@ const Produtos = () => {
         } else { colorMsg('RED', 'Preencha o campo nome.') }
 
     }
+
+    const verifyPrice = () => {
+        var tx = document.getElementById('ad-price')['value']
+        tx = tx.replace(/0,0/g, '');
+        tx = tx.replace(/0,00/g, '');
+        tx = tx.replace(/0,/g, '');
+        console.log(tx)
+        tx = tx.replace(/[A-Za-z]/, '');
+        tx = tx.replace(/\D/g, '');
+        var newTx;
+        if (tx.length === 0) {
+            newTx = ""
+        } else if (tx.length === 1) {
+            console.log(1)
+            newTx = `0,0${tx}`
+        } else if (tx.length === 2) {
+            console.log(2)
+            newTx = `0,${tx.slice(0, 2)}`
+        } else if (tx.length === 3) {
+            console.log(3)
+            newTx = `${tx.slice(0, 1)},${tx.slice(1, 3)}`
+        } else if (tx.length === 4) {
+            console.log(4)
+            newTx = `${tx.slice(0, 2)},${tx.slice(2, 4)}`
+        } else if (tx.length >= 5) {
+            console.log(4)
+            newTx = `${tx.slice(0, 3)},${tx.slice(3, 5)}`
+        }
+        document.getElementById('ad-price')['value'] = ("R$ " + newTx)
+    }
+
     return (
         <>
             <Menu></Menu>
@@ -430,7 +550,7 @@ const Produtos = () => {
                                 </div>
                                 <p style={{ 'margin': '0 0 1px 0' }} >Preço:</p>
                                 <div style={{ 'width': '100%', 'display': 'flex' }}>
-                                    <textarea className="ad-inp" id="ad-price" style={{ 'width': '100%', 'resize': 'none', 'padding': '8px 0 0 5px' }}></textarea>
+                                    <textarea className="ad-inp" id="ad-price" style={{ 'width': '100%', 'resize': 'none', 'padding': '8px 0 0 5px' }} defaultValue='R$ ' onChange={verifyPrice}></textarea>
                                 </div>
                                 <p style={{ 'margin': '0 0 1px 0' }}>Categoria:</p>
                                 <div style={{ 'width': '100%', 'display': 'flex' }}>

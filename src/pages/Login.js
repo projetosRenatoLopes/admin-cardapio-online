@@ -70,7 +70,7 @@ const Login = () => {
                 {/* <input type='text'  placeholder="Login" style={{ 'width': '50%' }}></input>
             <input type='password' placeholder="Senha" style={{ 'width': '50%' }}></input> */}
                 <InputEmail className='input-user' placeholder='Usuário' />
-                <InputPass className='input-pass' placeholder='Senha' />
+                <InputPass id='pass' className='input-pass' placeholder='Senha' />
                 <button type='submit' className="btn-co btn-l btn-g" onClick={signin} style={{ 'marginTop': '15px', 'width': '150px' }}>Entrar</button>
             </div>
         </>

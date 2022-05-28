@@ -4,7 +4,7 @@ import { HiEye, HiEyeOff } from 'react-icons/hi'
 import { MdLock} from 'react-icons/md'
 
 
-const InputPass = ( { className, placeholder } ) => {
+const InputPass = ( { className, placeholder, id } ) => {
     const [password, setPassword] = useState("")
     const [showPass, setShowPass] = useState(false)
 
@@ -17,7 +17,7 @@ const InputPass = ( { className, placeholder } ) => {
         <>
             <div  className="input-password">
                         <MdLock />
-                        <input id='pass' type={showPass ? "text" : "password"} className={className} placeholder={placeholder} value={password} onChange={e => setPassword(e.target.value)} />
+                        <input id={id} type={showPass ? "text" : "password"} className={className} placeholder={placeholder} value={password} onChange={e => setPassword(e.target.value)} />
                     <div className="login-eye">
                         {showPass ? (
                             <HiEye

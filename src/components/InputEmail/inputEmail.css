@@ -9,29 +9,33 @@ input[type=email] {
   margin-top: 10px;
   margin-bottom: 10px;
 }
-#validation-email{
-  margin-top: 1vw;
-  height: 0.01vw;
-  font-size: 0.6rem;
+
+#validation-name {
+  margin: 8px 0 0 0;
+  font-size: 0.8rem;
   color: rgb(255, 0, 0);
   background-color: transparent;
   text-align: left;
-  width: 250px;
+  width: 70%;
 }
+
 .input-email {
   width: 70%;
-  background-color: rgb(255, 255, 255); /*teste*/
+  background-color: rgb(255, 255, 255);
+  /*teste*/
   box-shadow: 0 -1px 0 #e5e5e5, 0 0 2px rgba(0, 0, 0, .12), 0 2px 4px rgba(0, 0, 0, .24);
   display: flex;
-  justify-content:flex-start;
+  justify-content: flex-start;
   align-items: center;
   border-radius: 10px;
   border-bottom: #008CBA 1px;
 }
+
 .input-email svg {
   margin-left: 5px;
   margin-right: 5px;
 }
-#user{
+
+#user {
   width: 87%;
 }

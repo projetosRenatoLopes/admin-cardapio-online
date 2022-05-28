@@ -27,7 +27,7 @@ const Home = () => {
 
             }).catch(error => {
                 resposta = error.toJSON();               
-                if (resposta.status === 404) {
+                if (resposta.status === 500) {
                     localStorage.removeItem(`${companyTag}-token`)
                     alert('Sessão inválida')
                     window.location.href = `${companyTag}/login`

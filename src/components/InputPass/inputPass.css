@@ -37,6 +37,15 @@ input[type=text] {
     min-height: 16px;
     min-width: 16px;
 }
-#pass{
+#pass,#new-pass,#rep-new-pass{
   width: 89%;
+}
+
+#validation-pass,#validation-actual-pass {
+  margin: 8px 0 0 0;
+  font-size: 0.8rem;
+  color: rgb(255, 0, 0);
+  background-color: transparent;
+  text-align: left;
+  width: 70%;
 }

@@ -4,15 +4,15 @@ import { FaUserAlt } from 'react-icons/fa'
 
 
 
-const InputEmail = ( { className, placeholder } ) => {
+const InputEmail = ({ className, placeholder, defaultValue }) => {
 
-    return(
+    return (
         <>
-            <div className="input-email">           
+            <div className="input-email">
                 <FaUserAlt />
-                <input type="email" id="user"  className={className} placeholder={placeholder}  ></input>
+                <input type="text" id="user" defaultValue={defaultValue} className={className} placeholder={placeholder}></input>
             </div>
-            
+
         </>
     )
 };
