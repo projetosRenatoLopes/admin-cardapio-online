@@ -61,7 +61,7 @@ const Home = () => {
         <InfoCompany></InfoCompany>
         <h4 style={{ 'marginBottom': '5px' }}>{products.length} produtos:  </h4>
         <h5 style={{ 'margin': '0 0 0 0' }}>{ativos.length} Ativos. </h5>
-        <h5 style={{ 'margin': '0 0 0 0' }}>{desativos.length} Desativados. </h5>
+        <h5 style={{ 'margin': '0 0 0 0' }}>{desativos.length} Inativos. </h5>
     </>)
 }
 
