@@ -24,6 +24,8 @@ const Home = () => {
             .then(resp => {
                 resposta = resp.data;
                localStorage.setItem(`${companyTag}-user`, resposta.user)
+               sessionStorage.setItem('userId', resposta.id)
+               console.log(resposta)
 
             }).catch(error => {
                 resposta = error.toJSON();               
