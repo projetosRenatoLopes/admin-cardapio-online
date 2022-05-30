@@ -103,7 +103,7 @@ const User = () => {
                     data: userEdited
                 })
                     .then(resp => {
-                        console.log(resp.data)
+                       
                         resposta = resp.data;
 
                         localStorage.setItem(`${companyTag}-user`, resposta.user)
@@ -111,8 +111,11 @@ const User = () => {
                         window.location.href = `${tag}/home`
                     }).catch(error => {
                         resposta = error.toJSON();
+                        console.log(resposta)
                         if (resposta.status === 404) {
                             alert('Erro 404 - Requisição invalida')
+                        } else if (resposta.status === 401) {
+                            alert('A senha atual está incorreta.')
                         } else { alert(`Erro ${resposta.status} - ${resposta.message}`) }
                     })
             }
