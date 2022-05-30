@@ -349,7 +349,7 @@ const Produtos = () => {
                         <input type='radio' name='actDes' id='active' onChange={filterActDes}></input>
                         <label htmlFor='active'>Ativos</label>
                         <input type='radio' name='actDes' id='desactive' onChange={filterActDes}></input>
-                        <label htmlFor='desactive'>Desativos</label>
+                        <label htmlFor='desactive'>Inativos</label>
                     </div>
                     <div>
                         <p>{product.length} itens.</p>
