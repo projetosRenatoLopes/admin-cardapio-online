@@ -11,7 +11,7 @@ import React, { Fragment } from "react";
 
 
 
-const Produtos = () => {    
+const Produtos = () => {
     const alert = useAlert();
     const companyTag = sessionStorage.getItem('tag')
     const token = localStorage.getItem(`${companyTag}-token`)
@@ -31,8 +31,14 @@ const Produtos = () => {
         // eslint-disable-next-line no-unused-vars
         var list = [];
         const products = JSON.parse(sessionStorage.getItem('viewProducts'))
-
-        const [product, setProduct] = useState(products.sort(compareName).sort(compare))
+        
+        var setViewProducts;
+        if (products === null) {
+            setViewProducts = []
+        } else {
+            setViewProducts = products.sort(compareName).sort(compare)
+        }
+        const [product, setProduct] = useState(setViewProducts)
 
         async function pesquisarProd() {
             const pesq = document.getElementById('prod-pesq')['value']
@@ -310,7 +316,7 @@ const Produtos = () => {
                     data: product
                 })
                     .then(resp => {
-                        resposta = resp.data;                        
+                        resposta = resp.data;
                         alert.success(`${productEdit[0].nameprod} atualizado.`)
 
                         api.get(`/produtos/${data[0].tag}`).then(res => {
@@ -516,7 +522,7 @@ const Produtos = () => {
     const verifyPrice = () => {
         var tx = document.getElementById('ad-price')['value']
         tx = tx.replace(/[R$ ]/g, '');
-        tx = tx.replace(/[.]/g, '');        
+        tx = tx.replace(/[.]/g, '');
         if (tx < '10') {
             tx = tx.replace(/0,00/g, '');
             tx = tx.replace(/0,0/g, '');
@@ -533,11 +539,11 @@ const Produtos = () => {
             newTx = `0,${tx.slice(0, 2)}`
         } else if (tx.length === 3) {
             newTx = `${tx.slice(0, 1)},${tx.slice(1, 3)}`
-        } else if (tx.length === 4) {            
+        } else if (tx.length === 4) {
             newTx = `${tx.slice(0, 2)},${tx.slice(2, 4)}`
         } else if (tx.length === 5) {
             newTx = `${tx.slice(0, 3)},${tx.slice(3, 5)}`
-        } else if (tx.length >= 6) {            
+        } else if (tx.length >= 6) {
             newTx = `${tx.slice(0, 1)}.${tx.slice(1, 4)},${tx.slice(4, 6)}`
         }
         document.getElementById('ad-price')['value'] = ("R$ " + newTx)

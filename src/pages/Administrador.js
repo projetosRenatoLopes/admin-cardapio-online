@@ -244,7 +244,6 @@ const Administrador = () => {
                 document.getElementById('msg')['textContent'] = 'Usuário e/ou senha incorretos'
                 document.getElementById('msg').style.color = 'red'
             } else if (res.status === 200) {
-                console.log(res)
                 if (res.data.token !== undefined && res.data.id !== undefined) {
                     sessionStorage.setItem('token', res.data.token)
                     sessionStorage.setItem('userId', res.data.id)

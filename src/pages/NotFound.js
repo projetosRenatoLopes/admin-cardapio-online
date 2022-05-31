@@ -20,8 +20,7 @@ const NotFound = () => {
             </>
         )
     } else {
-        const tag = `/${company.pathname.split('/')[1]}`;
-        // console.log("2 "+company.pathname.split('/')[2])
+        const tag = `/${company.pathname.split('/')[1]}`;        
         window.location.href = tag
     }
 
