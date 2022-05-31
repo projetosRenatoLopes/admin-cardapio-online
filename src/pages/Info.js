@@ -4,9 +4,12 @@ import OptionsCateg from '../components/OptionsCateg'
 import OptionsPayModes from '../components/OptionsPayModes'
 import formatTel from '../utils/formatTel'
 import api from "../services/api.js";
+import { useAlert } from "react-alert";
+import React, { Fragment } from "react";
 
 
 const Info = () => {
+    const alert = useAlert();
     const companyTag = sessionStorage.getItem('tag')
     const token = localStorage.getItem(`${companyTag}-token`)
     if (token === null || token === undefined) {
@@ -54,13 +57,8 @@ const Info = () => {
 
     }
 
-    const colorMsg = (color, msg) => {
-        document.getElementById('ad-resposta')['value'] = `${msg}`
-        document.getElementById('ad-resposta').style.boxShadow = `0 -1px 0 ${color}, 0 0 2px ${color}, 0 2px 4px ${color}`
-    }
-
     const updateInfo = async () => {
-        colorMsg('yellow', 'Aguardando resposta...')
+        
         document.getElementById('btn-cad')['disabled'] = true
         const nameEmp = document.getElementById('ad-name')['value'],
             tagEmp = document.getElementById('ad-tag')['value'],
@@ -110,8 +108,7 @@ const Info = () => {
             "emptel": newTel,
             "emptxentrega": newTx,
             "backcolor": colorBack
-        }
-        console.log(dadosEmpresa)
+        }        
 
         let verifyProp = true;
         Object.entries(dadosEmpresa).forEach(([key, value]) => {
@@ -119,16 +116,15 @@ const Info = () => {
                 verifyProp = false
             }
         });
-        if (verifyProp === true) {
-            colorMsg('blue', 'Aguardando resposta do servidor >')
-            if ((!isNaN(parseFloat(data[0].tel)) && isFinite(data[0].tel)) === true && data[0].tel.length === 13) {
+        if (verifyProp === true) {            
+            if ((!isNaN(parseFloat(dadosEmpresa.emptel)) && isFinite(dadosEmpresa.emptel)) === true && dadosEmpresa.emptel.length === 13) {
                 const regex = /\W|_/;
-                if (regex.test(data[0].tag) === false) {
-                    if (!isNaN(parseFloat(data[0].txentrega)) && isFinite(data[0].txentrega)) {
+                if (regex.test(dadosEmpresa.emptag) === false) {
+                    if (!isNaN(parseFloat(dadosEmpresa.emptxentrega)) && isFinite(dadosEmpresa.emptxentrega)) {
                         const token = localStorage.getItem(`${companyTag}-token`)
                         if (token !== undefined) {
-                            if (data[0].categs !== "") {
-                                if (data[0].paymodes !== "") {
+                            if (dadosEmpresa.empcategs !== "") {
+                                if (dadosEmpresa.emppaymodes !== "") {
 
                                     var resposta;
                                     await api({
@@ -142,7 +138,7 @@ const Info = () => {
                                     })
                                         .then(resp => {
                                             resposta = resp.data;
-                                            colorMsg('GREEN', resposta.message)
+                                            alert.success(resposta.message)
 
                                             api.get(`/empresa/${data[0].tag}`).then(res => {
                                                 if (res.data.company[0].tag === undefined) {
@@ -151,30 +147,32 @@ const Info = () => {
                                                     sessionStorage.setItem('info', JSON.stringify(res.data.company))
                                                 }
                                             }).catch(error => {
-                                                colorMsg('yellow', 'Dados atualizados! Porém houve um erro ao recuperar as informações do servidor. Feche a página e entre novamente para obter os dados atualizados.')
+                                                alert.show('Dados atualizados! Porém houve um erro ao recuperar as informações do servidor. Feche a página e entre novamente para obter os dados atualizados.')
                                             })
 
 
                                         }).catch(error => {
                                             resposta = error.toJSON();
                                             if (resposta.status === 404) {
-                                                colorMsg('RED', 'Erro 404 - Requisição invalida')
+                                                alert.error('Erro 404 - Requisição invalida')
                                             } else {
-                                                colorMsg('RED', `Erro ${resposta.status} - ${resposta.message}`)
+                                                alert.error(`Erro ${resposta.status} - ${resposta.message}`)
                                             }
                                         })
 
-                                } else { colorMsg('red', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
-                            } else { colorMsg('red', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
+                                } else { alert.error('Erro ao enviar dados. Feche e abra a página novamente.') }
+                            } else { alert.error('Erro ao enviar dados. Feche e abra a página novamente.') }
                         } else {
-                            alert('Usuário não autenticado.')
+                            alert.show('Usuário não autenticado.')
                             const companyTag = JSON.parse(sessionStorage.getItem('tag'))
-                            window.location.href = `/${companyTag}/login`
+                            setTimeout(() => {                                
+                                window.location.href = `/${companyTag}/login`
+                            }, 15000);
                         }
-                    } else { colorMsg('RED', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
-                } else { colorMsg('RED', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
-            } else { colorMsg('RED', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
-        } else { colorMsg('RED', 'Preencha todos os campos...') }
+                    } else { alert.error('Verifique a campo Taxa de Entrega.') }
+                } else { alert.error('Erro ao enviar dados. Recarregue a página e tente novamente.') }
+            } else { alert.error('Erro ao enviar dados. Verifique o campo WhatsApp') }
+        } else { alert.error('Preencha todos os campos...') }
 
 
         document.getElementById('btn-cad')['disabled'] = false
@@ -256,8 +254,7 @@ const Info = () => {
                 <input type='text' className="ad-inp" id="ad-est" defaultValue={data[0].adrest} style={{ 'width': '70%' }} autoComplete="off"></input>
             </div>
         </div>
-        <button id='btn-cad' className="btn btn-success" onClick={updateInfo} style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Salvar Dados</button>
-        <textarea className="ad-inp" id='ad-resposta' defaultValue="Resposta do servidor >" disabled style={{ 'width': '97%', 'height': '100px', 'backgroundColor': 'white', 'color': 'black', 'resize': 'none' }}></textarea>
+        <button id='btn-cad' className="btn btn-success" onClick={updateInfo} style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Salvar Dados</button>        
     </>
     )
 }

@@ -6,8 +6,13 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import api from "../services/api.js";
+import { useAlert } from "react-alert";
+import React, { Fragment } from "react";
 
-const Produtos = () => {
+
+
+const Produtos = () => {    
+    const alert = useAlert();
     const companyTag = sessionStorage.getItem('tag')
     const token = localStorage.getItem(`${companyTag}-token`)
     if (token === null || token === undefined) {
@@ -80,7 +85,7 @@ const Produtos = () => {
                                 api.get(`/produtos/${data[0].tag}`).then(res => {
                                     if (res.data[0].products === undefined) {
                                         sessionStorage.setItem('listProduct', JSON.stringify([]))
-                                        alert('Produto excluído! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
+                                        alert.show('Produto excluído! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
                                     } else {
                                         sessionStorage.setItem('listProduct', JSON.stringify(res.data[0].products))
                                         sessionStorage.setItem('viewProducts', JSON.stringify(res.data[0].products))
@@ -101,20 +106,25 @@ const Produtos = () => {
                                             }
                                         });
                                         setProduct(newList)
-                                        alert(`${product.nomeprod} excluido.`)
+                                        alert.success(`${product.nomeprod} excluido.`)
 
                                     }
                                 }).catch(error => {
-                                    alert('Produto excluído! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
+                                    alert.show('Produto excluído! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
                                 })
 
                             }).catch(error => {
                                 resposta = error.toJSON();
                                 if (resposta.status === 500) {
-                                    alert('Erro 500 - Requisição invalida')
-                                } else { alert(`Erro ${resposta.status} - ${resposta.message}`) }
+                                    alert.error('Erro 500 - Requisição invalida')
+                                } else { alert.error(`Erro ${resposta.status} - ${resposta.message}`) }
                             })
-                    } else { alert('Usuário não autenticado.'); window.location.href = `${companyTag}/login` }
+                    } else {
+                        alert.error('Usuário não autenticado.');
+                        setTimeout(() => {
+                            window.location.href = `${companyTag}/login`
+                        }, 1500);
+                    }
 
 
                 }
@@ -130,7 +140,7 @@ const Produtos = () => {
                     categPro = document.getElementById(`selCateg-${product.uuid}`)['value'],
                     situacao = document.getElementById(`selAtivo-${product.uuid}`)['value'],
                     tag = data[0].tag;
-                const pricePro = price.replace(/[A-Za-z]/, '').replace(/[$]/, '').replace(/[,]/, '.').replace(/( )+/g, '').replace(/[R$ ]/, '');
+                const pricePro = price.replace(/[.]/g, '').replace(/[A-Za-z]/, '').replace(/[$]/, '').replace(/[,]/, '.').replace(/( )+/g, '').replace(/[R$ ]/, '');
                 const productData = [{ "id": id, "nameprod": nameProd, "priceprod": pricePro, "imgprod": imgPro, "descprod": descPro, "categprod": categPro, "sit": situacao, "tagprod": tag }]
                 if (nameProd !== '') {
                     if (descPro !== '') {
@@ -140,18 +150,19 @@ const Produtos = () => {
                                 if (regex.test(pricePro) === true) {
                                     if (categPro !== "") {
                                         editProd(productData)
-                                    } else { alert('Selecione uma categoria.') }
-                                } else { alert('Preencha corretamente o campo Preço.') }
-                            } else { alert('Preencha o campo Preço.') }
-                        } else { alert('Preencha o campo Link da Imagem.') }
-                    } else { alert('Preencha o campo Descrição.') }
-                } else { alert('Preencha o campo nome.') }
+                                    } else { alert.error('Selecione uma categoria.') }
+                                } else { alert.error('Preencha corretamente o preço.') }
+                            } else { alert.error('Informe o preço do produto.') }
+                        } else { alert.error('Preencha o campo Link da Imagem.') }
+                    } else { alert.error('Insira uma descrição para o produto.') }
+                } else { alert.error('Insira o nome do produto.') }
 
             }
 
             const verifyPriceEdit = () => {
                 var tx = document.getElementById(`preco-${product.uuid}`)['value']
                 tx = tx.replace(/[R$ ]/g, '');
+                tx = tx.replace(/[.]/g, '');
                 if (tx < '10') {
                     tx = tx.replace(/0,00/g, '');
                     tx = tx.replace(/0,0/g, '');
@@ -161,17 +172,23 @@ const Produtos = () => {
                 tx = tx.replace(/[A-Za-z]/, '');
                 var newTx;
                 if (tx.length === 0) {
-                    newTx = "0,00"
+                    newTx = ""
                 } else if (tx.length === 1) {
+
                     newTx = `0,0${tx}`
                 } else if (tx.length === 2) {
+
                     newTx = `0,${tx.slice(0, 2)}`
                 } else if (tx.length === 3) {
+
                     newTx = `${tx.slice(0, 1)},${tx.slice(1, 3)}`
                 } else if (tx.length === 4) {
                     newTx = `${tx.slice(0, 2)},${tx.slice(2, 4)}`
-                } else if (tx.length >= 5) {
+                } else if (tx.length === 5) {
+
                     newTx = `${tx.slice(0, 3)},${tx.slice(3, 5)}`
+                } else if (tx.length >= 6) {
+                    newTx = `${tx.slice(0, 1)}.${tx.slice(1, 4)},${tx.slice(4, 6)}`
                 }
                 document.getElementById(`preco-${product.uuid}`)['value'] = ("R$ " + newTx)
             }
@@ -239,7 +256,6 @@ const Produtos = () => {
                                 <button id='btn-cad' className="btn-co btn-l" onClick={verifyEditProd} style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Salvar</button>
                                 <label className="btn-co btn-r" htmlFor='acc-close' style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Fechar</label>
                             </div>
-                            <textarea className="ad-inp" id={`resp-${product.uuid}`} defaultValue="Resposta do servidor >" disabled style={{ 'width': '97%', 'height': '100px', 'backgroundColor': 'white', 'color': 'black', 'resize': 'none' }}></textarea>
                         </div>
                     </section>
                     <input type="radio" name="accordion-edit" id='acc-close' />
@@ -277,7 +293,7 @@ const Produtos = () => {
 
 
         async function editProd(productEdit) {
-            colorMsgEdit('yellow', `resp-${productEdit[0].id}`, 'Aguardando reposta do servidor')
+            alert.show(`Enviando dados...`)
             const data = JSON.parse(sessionStorage.getItem('info'))
 
             const product = productEdit;
@@ -294,13 +310,13 @@ const Produtos = () => {
                     data: product
                 })
                     .then(resp => {
-                        resposta = resp.data;
-                        colorMsgEdit('GREEN', `resp-${productEdit[0].id}`, resposta.message)
+                        resposta = resp.data;                        
+                        alert.success(`${productEdit[0].nameprod} atualizado.`)
 
                         api.get(`/produtos/${data[0].tag}`).then(res => {
                             if (res.data[0].products === undefined) {
                                 sessionStorage.setItem('listProduct', JSON.stringify([]))
-                                colorMsgEdit('yellow', `resp-${productEdit[0].id}`, 'Produto atualizado! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
+                                alert.show('Produto atualizado! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
                             } else {
                                 sessionStorage.setItem('listProduct', JSON.stringify(res.data[0].products))
                                 sessionStorage.setItem('viewProducts', JSON.stringify(res.data[0].products))
@@ -324,16 +340,22 @@ const Produtos = () => {
 
                             }
                         }).catch(error => {
-                            colorMsgEdit('yellow', `resp-${productEdit[0].id}`, 'Produto atualizado! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
+                            alert.show('Produto atualizado! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
                         })
 
                     }).catch(error => {
                         resposta = error.toJSON();
                         if (resposta.status === 404) {
-                            colorMsgEdit('RED', `resp-${productEdit[0].id}`, 'Erro 404 - Requisição invalida')
-                        } else { colorMsgEdit('RED', `resp-${productEdit[0].id}`, `Erro ${resposta.status} - ${resposta.message}`) }
+                            alert.error('Erro 404 - Requisição invalida')
+                        } else { alert.error(`Erro ${resposta.status} - ${resposta.message}`) }
                     })
-            } else { colorMsgEdit('RED', `resp-${productEdit[0].id}`, 'Usuário não autenticado.'); window.location.href = `${companyTag}/login` }
+            } else {
+                alert.error('Usuário não autenticado.');
+                setTimeout(() => {
+                    window.location.href = `${companyTag}/login`
+                }
+                    , 1500);
+            }
         }
 
         const productList = JSON.parse(sessionStorage.getItem('listProduct'))
@@ -415,25 +437,14 @@ const Produtos = () => {
         )
     }
 
-    const colorMsg = (color, msg) => {
-        document.getElementById('ad-resposta')['value'] = `${msg}`
-        document.getElementById('ad-resposta').style.boxShadow = `0 -1px 0 ${color}, 0 0 2px ${color}, 0 2px 4px ${color}`
-    }
-
-    const colorMsgEdit = (color, id, msg) => {
-        console.log(id)
-        document.getElementById(id)['value'] = `${msg}`
-        document.getElementById(id).style.boxShadow = `0 -1px 0 ${color}, 0 0 2px ${color}, 0 2px 4px ${color}`
-    }
-
     async function reqServer() {
-        colorMsg('yellow', 'Aguardando reposta do servidor')
+
         const nameProd = document.getElementById('ad-name')['value'],
             descPro = document.getElementById('ad-desc')['value'],
             imgPro = document.getElementById('ad-img')['value'],
             price = document.getElementById('ad-price')['value'],
             categPro = document.getElementById('sel-categ')['value'];
-        const pricePro = price.replace(/[A-Za-z]/, '').replace(/[$]/, '').replace(/[,]/, '.').replace(/( )+/g, '').replace(/[R$ ]/, '');
+        const pricePro = price.replace(/[.]/g, '').replace(/[A-Za-z]/, '').replace(/[$]/, '').replace(/[,]/, '.').replace(/( )+/g, '').replace(/[R$ ]/, '');
         const data = JSON.parse(sessionStorage.getItem('info'))
         const tag = data[0].tag
 
@@ -444,76 +455,90 @@ const Produtos = () => {
                     if (pricePro !== '') {
                         const regex = /\d|_/;
                         if (regex.test(pricePro) === true) {
-                            const token = localStorage.getItem(`${companyTag}-token`)
-                            if (token !== undefined) {
-                                var resposta;
-                                await api({
-                                    method: 'POST',
-                                    url: `/cadastro/produto`,
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        Authorization: token
-                                    },
-                                    data: product
-                                })
-                                    .then(resp => {
-                                        resposta = resp.data;
-                                        colorMsg('GREEN', resposta.message)
+                            if (categPro !== "") {
 
-                                        api.get(`/produtos/${data[0].tag}`).then(res => {
-                                            if (res.data[0].products === undefined) {
-                                                sessionStorage.setItem('listProduct', JSON.stringify([]))
-                                                colorMsg('yellow', 'Produto Inserido! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
-                                            } else {
-                                                sessionStorage.setItem('listProduct', JSON.stringify(res.data[0].products))
-                                                sessionStorage.setItem('viewProducts', JSON.stringify(res.data[0].products))
-                                                window.location.href = `${companyTag}/produtos`
-                                            }
+
+
+
+                                const token = localStorage.getItem(`${companyTag}-token`)
+                                if (token !== undefined) {
+                                    alert.show('Enviando dados...')
+                                    var resposta;
+                                    await api({
+                                        method: 'POST',
+                                        url: `/cadastro/produto`,
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            Authorization: token
+                                        },
+                                        data: product
+                                    })
+                                        .then(resp => {
+                                            resposta = resp.data;
+                                            alert.success(resposta.message)
+
+                                            api.get(`/produtos/${data[0].tag}`).then(res => {
+                                                if (res.data[0].products === undefined) {
+                                                    sessionStorage.setItem('listProduct', JSON.stringify([]))
+                                                    alert.show('Produto Inserido! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
+                                                } else {
+                                                    sessionStorage.setItem('listProduct', JSON.stringify(res.data[0].products))
+                                                    sessionStorage.setItem('viewProducts', JSON.stringify(res.data[0].products))
+                                                    window.location.href = `${companyTag}/produtos`
+                                                }
+                                            }).catch(error => {
+                                                alert.show('Produto Inserido! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
+                                            })
+
                                         }).catch(error => {
-                                            colorMsg('yellow', 'Produto Inserido! Porém houve um erro ao recuperar as informações do servidor. \n\nFeche a página e entre novamente para obter os dados atualizados.')
+                                            resposta = error.toJSON();
+                                            if (resposta.status === 404) {
+                                                alert.error('Erro 404 - Requisição invalida')
+                                            } else { alert.error(`Erro ${resposta.status} - ${resposta.message}`) }
                                         })
 
-                                    }).catch(error => {
-                                        resposta = error.toJSON();
-                                        if (resposta.status === 404) {
-                                            colorMsg('RED', 'Erro 404 - Requisição invalida')
-                                        } else { colorMsg('RED', `Erro ${resposta.status} - ${resposta.message}`) }
-                                    })
-                            } else { colorMsg('RED', 'Usuário não autenticado.'); window.location.href = `${companyTag}/login` }
-                        } else { colorMsg('RED', 'Preencha corretamente o campo Preço.') }
-                    } else { colorMsg('RED', 'Preencha o campo Preço.') }
-                } else { colorMsg('RED', 'Preencha o campo Link da Imagem.') }
-            } else { colorMsg('RED', 'Preencha o campo Descrição.') }
-        } else { colorMsg('RED', 'Preencha o campo nome.') }
+                                } else {
+                                    alert.error('Usuário não autenticado.');
+                                    setTimeout(() => {
+                                        window.location.href = `${companyTag}/login`
+                                    }
+                                        , 1500);
+                                }
+                            } else { alert.error('Selecione uma categoria.') }
+                        } else { alert.error('Verifique o Preço.') }
+                    } else { alert.error('Preencha o campo Preço.') }
+                } else { alert.error('Preencha o campo Link da Imagem.') }
+            } else { alert.error('Insira uma descrição para o produto.') }
+        } else { alert.error('Insira o nome do produto.') }
 
     }
 
     const verifyPrice = () => {
         var tx = document.getElementById('ad-price')['value']
-        tx = tx.replace(/0,0/g, '');
-        tx = tx.replace(/0,00/g, '');
-        tx = tx.replace(/0,/g, '');
-        console.log(tx)
-        tx = tx.replace(/[A-Za-z]/, '');
+        tx = tx.replace(/[R$ ]/g, '');
+        tx = tx.replace(/[.]/g, '');        
+        if (tx < '10') {
+            tx = tx.replace(/0,00/g, '');
+            tx = tx.replace(/0,0/g, '');
+            tx = tx.replace(/0,/g, '');
+        }
         tx = tx.replace(/\D/g, '');
+        tx = tx.replace(/[A-Za-z]/, '');
         var newTx;
         if (tx.length === 0) {
             newTx = ""
         } else if (tx.length === 1) {
-            console.log(1)
             newTx = `0,0${tx}`
         } else if (tx.length === 2) {
-            console.log(2)
             newTx = `0,${tx.slice(0, 2)}`
         } else if (tx.length === 3) {
-            console.log(3)
             newTx = `${tx.slice(0, 1)},${tx.slice(1, 3)}`
-        } else if (tx.length === 4) {
-            console.log(4)
+        } else if (tx.length === 4) {            
             newTx = `${tx.slice(0, 2)},${tx.slice(2, 4)}`
-        } else if (tx.length >= 5) {
-            console.log(4)
+        } else if (tx.length === 5) {
             newTx = `${tx.slice(0, 3)},${tx.slice(3, 5)}`
+        } else if (tx.length >= 6) {            
+            newTx = `${tx.slice(0, 1)}.${tx.slice(1, 4)},${tx.slice(4, 6)}`
         }
         document.getElementById('ad-price')['value'] = ("R$ " + newTx)
     }
@@ -556,7 +581,6 @@ const Produtos = () => {
                                 <br></br>
                             </div>
                             <button id='btn-cad' className="btn  btn-success" onClick={reqServer} style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Registrar Produto</button>
-                            <textarea className="ad-inp" id='ad-resposta' defaultValue="Resposta do servidor >" disabled style={{ 'width': '97%', 'height': '100px', 'backgroundColor': 'white', 'color': 'black', 'resize': 'none' }}></textarea>
                         </div>
                     </section>
                     <input type="radio" name="accordion" id="acc-close" />

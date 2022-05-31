@@ -2,9 +2,11 @@ import LogoPage from "../components/Logo";
 import Menu from "../components/Menu/menu";
 import InfoCompany from "../components/Companny/index.js";
 import api from "../services/api";
-import { AiOutlineTrademark } from "react-icons/ai";
+import { useAlert } from "react-alert";
+import React, { Fragment } from "react";
 
 const Home = () => {
+    const alert = useAlert();
     const companyTag = sessionStorage.getItem('tag')
     const token = localStorage.getItem(`${companyTag}-token`)
     if (token === null || token === undefined) {
@@ -19,23 +21,27 @@ const Home = () => {
                 'Content-Type': 'application/json',
                 Authorization: token
             },
-            data: {"tagprod":companyTag.replace('/', "")}
+            data: { "tagprod": companyTag.replace('/', "") }
         })
             .then(resp => {
                 resposta = resp.data;
-               localStorage.setItem(`${companyTag}-user`, resposta.user)
-               sessionStorage.setItem('userId', resposta.id)              
+                localStorage.setItem(`${companyTag}-user`, resposta.user)
+                sessionStorage.setItem('userId', resposta.id)
 
             }).catch(error => {
-                resposta = error.toJSON();               
+                resposta = error.toJSON();
                 if (resposta.status === 500) {
                     localStorage.removeItem(`${companyTag}-token`)
-                    alert('Sessão inválida')
-                    window.location.href = `${companyTag}/login`
+                    alert.error('Sessão inválida! Faça login novamente.')
+                    setTimeout(() => {                        
+                        window.location.href = `${companyTag}/login`
+                    }, 15000);
                 } else {
                     localStorage.removeItem(`${companyTag}-token`)
-                    alert(`Erro ${resposta.status} - ${resposta.message}`);
-                    window.location.href = `${companyTag}/login` 
+                    alert.show(`Erro ${resposta.status} - ${resposta.message}`);
+                    setTimeout(() => {                        
+                        window.location.href = `${companyTag}/login`
+                    }, 15000);                    
                 }
             })
     }
@@ -55,14 +61,16 @@ const Home = () => {
     })
 
     return (<>
-        <Menu></Menu>
-        <div className='logo-page'>
-            <LogoPage />
-        </div>
-        <InfoCompany></InfoCompany>
-        <h4 style={{ 'marginBottom': '5px' }}>{products.length} produtos:  </h4>
-        <h5 style={{ 'margin': '0 0 0 0' }}>{ativos.length} Ativos. </h5>
-        <h5 style={{ 'margin': '0 0 0 0' }}>{desativos.length} Inativos. </h5>
+        <Fragment>
+            <Menu></Menu>
+            <div className='logo-page'>
+                <LogoPage />
+            </div>
+            <InfoCompany></InfoCompany>
+            <h4 style={{ 'marginBottom': '5px' }}>{products.length} produtos:  </h4>
+            <h5 style={{ 'margin': '0 0 0 0' }}>{ativos.length} Ativos. </h5>
+            <h5 style={{ 'margin': '0 0 0 0' }}>{desativos.length} Inativos. </h5>            
+        </Fragment>
     </>)
 }
 

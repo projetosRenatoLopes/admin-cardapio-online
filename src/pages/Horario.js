@@ -1,7 +1,10 @@
 import api from "../services/api";
 import Menu from "../components/Menu/menu";
+import { useAlert } from "react-alert";
+import React, { Fragment } from "react";
 
 const Horario = () => {
+    const alert = useAlert();
     const companyTag = sessionStorage.getItem('tag')
     const token = localStorage.getItem(`${companyTag}-token`)
     if (token === null || token === undefined) {
@@ -29,11 +32,6 @@ const Horario = () => {
         }
     }
 
-    const colorMsg = (color, msg) => {
-        document.getElementById('ad-resposta')['value'] = `${msg}`
-        document.getElementById('ad-resposta').style.boxShadow = `0 -1px 0 ${color}, 0 0 2px ${color}, 0 2px 4px ${color}`
-    }
-
     const updateHours = async () => {
         document.getElementById('btn-cad')['disabled'] = true
 
@@ -45,11 +43,11 @@ const Horario = () => {
                 var horaInicio = document.getElementById(`ad-${day}-open`)['value']
                 var horaFim = document.getElementById(`ad-${day}-closed`)['value']
                 if (`${horaInicio}-${horaFim}` === '-' || `${horaInicio}-${horaFim}`.length < 11) {
-                    alert(`Verifique se preencheu corretamente os campos de ${dayWeek}`)
+                    alert.show(`Verifique se preencheu corretamente os campos de ${dayWeek}`)
                     return ""
                 } else {
                     if (horaFim < horaInicio) {
-                        alert(`A hora final de ${dayWeek} é menor que a hora de inicio.`)
+                        alert.show(`A hora final de ${dayWeek} é menor que a hora de inicio.`)
                         return ""
                     } else {
                         return `${horaInicio}-${horaFim}`
@@ -100,7 +98,7 @@ const Horario = () => {
             }
         });
         if (verifyProp === true) {
-            colorMsg('blue', 'Aguardando resposta do servidor >')
+            alert.show('Enviando dados...')
             if ((!isNaN(parseFloat(data[0].tel)) && isFinite(data[0].tel)) === true && data[0].tel.length === 13) {
                 const regex = /\W|_/;
                 if (regex.test(data[0].tag) === false) {
@@ -122,7 +120,7 @@ const Horario = () => {
                                     })
                                         .then(resp => {
                                             resposta = resp.data;
-                                            colorMsg('GREEN', resposta.message)
+                                            alert.success(resposta.message)
 
                                             api.get(`/empresa/${data[0].tag}`).then(res => {
                                                 if (res.data.company[0].tag === undefined) {
@@ -131,28 +129,28 @@ const Horario = () => {
                                                     sessionStorage.setItem('info', JSON.stringify(res.data.company))
                                                 }
                                             }).catch(error => {
-                                                colorMsg('yellow', 'Dados atualizados! Porém houve um erro ao recuperar as informações do servidor. Feche a página e entre novamente para obter os dados atualizados.')
+                                                alert.show('Dados atualizados! Porém houve um erro ao recuperar as informações do servidor. Feche a página e entre novamente para obter os dados atualizados.')
                                             })
 
 
                                         }).catch(error => {
                                             resposta = error.toJSON();
                                             if (resposta.status === 404) {
-                                                colorMsg('RED', 'Erro 404 - Requisição invalida')
+                                                alert.error('Erro 404 - Requisição invalida')
                                             } else {
-                                                colorMsg('RED', `Erro ${resposta.status} - ${resposta.message}`)
+                                                alert.error(`Erro ${resposta.status} - ${resposta.message}`)
                                             }
                                         })
 
-                                } else { colorMsg('red', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
-                            } else { colorMsg('red', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
+                                } else { alert.error('Erro ao enviar dados. Feche e abra a página novamente.') }
+                            } else { alert.error('Erro ao enviar dados. Feche e abra a página novamente.') }
                         } else {
-                            alert('Usuário não autenticado.')
+                            alert.error('Usuário não autenticado.')
                         }
-                    } else { colorMsg('RED', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
-                } else { colorMsg('RED', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
-            } else { colorMsg('RED', 'Erro ao enviar dados. Recarregue a página e tente novamente.') }
-        } else { colorMsg('RED', 'Preencha todos os campos...') }
+                    } else { alert.error('Erro ao enviar dados. Feche e abra a página novamente.') }
+                } else { alert.error('Erro ao enviar dados. Feche e abra a página novamente.') }
+            } else { alert.error('Erro ao enviar dados. Feche e abra a página novamente.') }
+        } else { alert.show('Preencha todos os campos...') }
 
 
         document.getElementById('btn-cad')['disabled'] = false
@@ -246,8 +244,7 @@ const Horario = () => {
                     <input type='time' className="ad-inp" id="ad-sab-closed" defaultValue={data[0].funcsab.slice(6, 11)} style={{ 'width': '17%' }} disabled={sabRadCl}></input>
                 </div>
             </div>
-            <button id='btn-cad' className="btn btn-success" onClick={updateHours} style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Salvar Dados</button>
-            <textarea className="ad-inp" id='ad-resposta' defaultValue="Resposta do servidor >" disabled style={{ 'width': '97%', 'height': '100px', 'backgroundColor': 'white', 'color': 'black', 'resize': 'none' }}></textarea>
+            <button id='btn-cad' className="btn btn-success" onClick={updateHours} style={{ 'marginTop': '15px', 'marginBottom': '30px' }}>Salvar Dados</button>            
         </>
     )
 

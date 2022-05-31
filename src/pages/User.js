@@ -2,8 +2,12 @@ import InputEmail from "../components/InputEmail";
 import InputPass from "../components/InputPass";
 import Menu from "../components/Menu/menu";
 import api from "../services/api";
+import { useAlert } from "react-alert";
+import React, { Fragment } from "react";
+
 
 const User = () => {
+    const alert = useAlert();
     const userAdmin = sessionStorage.getItem('userAdmin')
     const companyTag = sessionStorage.getItem('tag')
     var user;
@@ -60,8 +64,7 @@ const User = () => {
 
     const validName = () => {
         var name = document.getElementById('user')["value"];
-        if (name === "") {
-            console.log('to aqui')
+        if (name === "") {            
             document.getElementById("user").style.boxShadow = '0px 1px 0px 0px red';
             document.getElementById("validation-name").innerText = ("Digite o nome.")
             return false;
@@ -84,7 +87,7 @@ const User = () => {
             const tag = sessionStorage.getItem('tag')
             const token = localStorage.getItem(`${tag}-token`)
             if (id === null || tag === null || id === "" || tag === "") {
-                alert('Erro ao enviar informações!\nAtualize a página e tente novamente.')
+                alert.show('Erro ao enviar informações!\nFeche a página e abra novamente novamente.')
             } else {
                 const nameEdit = document.getElementById('user')['value']
                 const passEdit = document.getElementById('pass')['value']
@@ -102,21 +105,22 @@ const User = () => {
                     },
                     data: userEdited
                 })
-                    .then(resp => {
+                    .then(async resp => {
                        
                         resposta = resp.data;
 
                         localStorage.setItem(`${companyTag}-user`, resposta.user)
-                        alert(`${resposta.message}`)
-                        window.location.href = `${tag}/home`
+                        alert.success('Alterações salvas com sucesso')
+                        setTimeout(() => {
+                            window.location.href = `${tag}/home`
+                        }, 15000);
                     }).catch(error => {
-                        resposta = error.toJSON();
-                        console.log(resposta)
+                        resposta = error.toJSON();                       
                         if (resposta.status === 404) {
-                            alert('Erro 404 - Requisição invalida')
+                            alert.error('Erro 404 - Requisição invalida')
                         } else if (resposta.status === 401) {
-                            alert('A senha atual está incorreta.')
-                        } else { alert(`Erro ${resposta.status} - ${resposta.message}`) }
+                            alert.error('A senha atual está incorreta.')
+                        } else {  alert.show(`Erro ${resposta.status} - ${resposta.message}`) }
                     })
             }
         }
